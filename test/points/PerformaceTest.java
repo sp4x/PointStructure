@@ -1,56 +1,72 @@
 package points;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Random;
-import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.rules.Stopwatch;
 
 public class PerformaceTest {
 
-	private static final int N = 1000000;
-	private PointStructure struct;
-	private Set<Point> points;
-	private Point target;
-	private double testDistance;
+	private static final int NUMBER_OF_SEARCH = 10;
+	private static final int MAX_INT = Integer.MAX_VALUE;
+	private static final int NUMBER_OF_POINTS = 1000000;
+
+	private Random generator;
+	private PointStructure points;
+	private Point[] pointArray;
+
+	@Before
+	public void setUp() {
+		generator = new Random(512);
+		points = new PointStructure();
+		for (int i = 0; i < NUMBER_OF_POINTS; i++) {
+			points.add(nextPoint());
+		}
+		pointArray = points.tree.stream().toArray();
+	}
 
 	@Test
-	public void test_struct() {
-
-		points = new HashSet<>();
-		Random r = new Random();
-		for (int i = 0; i < N; i++) {
-			Point point = new Point(r.nextDouble(), r.nextDouble());
-			points.add(point);
+	public void test_rebuilding_tree() {
+		points.rebuildTree();
+		for (int i = 0; i < NUMBER_OF_SEARCH; i++) {
+			Point target = nextPoint();
+			Integer testDistance = nextInt();
+			Collection<Point> accumulator = new ArrayList<>(NUMBER_OF_POINTS);
+			points.treeSearch(target, testDistance).forEach(p -> accumulator.add(p));
 		}
-		struct = new PointStructure(points);
-
-		for (int i = 0; i < 100; i++) {
-
-			target = new Point(r.nextDouble(), r.nextDouble());
-			testDistance = r.nextDouble();
-
-			Predicate<? super Point> predicate = p -> Point.distance(p, target) <= testDistance;
-
-			long startTime = System.currentTimeMillis();
-			Set<Point> expected = points.stream().filter(predicate).collect(Collectors.toSet());
-			System.out.println(System.currentTimeMillis() - startTime);
-
-			startTime = System.currentTimeMillis();
-			Set<Point> actual = struct.searchWithin(target, testDistance);
-			System.out.println(System.currentTimeMillis() - startTime);
-
-			System.out.println("---");
+	}
+	
+	@Test
+	public void test_without_rebuilding_tree() {
+		for (int i = 0; i < NUMBER_OF_SEARCH; i++) {
+			Point target = nextPoint();
+			Integer testDistance = nextInt();
+			Collection<Point> accumulator = new ArrayList<>(NUMBER_OF_POINTS);
+			points.treeSearch(target, testDistance).forEach(p -> accumulator.add(p));
 		}
+	}
+	
+	@Test
+	public void test_linear_search() {
+		for (int i = 0; i < NUMBER_OF_SEARCH; i++) {
+			Point target = nextPoint();
+			Integer testDistance = nextInt();
+			Collection<Point> accumulator = new ArrayList<>(NUMBER_OF_POINTS);
+			Predicate<Point> predicate = p -> !p.equals(target) && Point.distance(p, target) <= (double) testDistance;
+			Arrays.stream(pointArray).filter(predicate).forEach(p -> accumulator.add(p));
+		}
+	}
 
-		
+	private Point nextPoint() {
+		return new Point(nextInt(), nextInt());
+	}
+
+	private int nextInt() {
+		return generator.nextInt(MAX_INT);
 	}
 
 }

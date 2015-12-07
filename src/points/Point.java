@@ -2,47 +2,21 @@ package points;
 
 public class Point {
 
-	private Double x;
-	private Double y;
+	private final Integer x;
+	private final Integer y;
 
-	public Point(Double x, Double y) {
+	public Point(Integer x, Integer y) {
 		this.x = x;
 		this.y = y;
 	}
-	
-	
-	
-	public Point(int x, int y) {
-		this.x = Double.valueOf(x);
-		this.y = Double.valueOf(y);
-	}
 
-	
-
-
-	public Double getX() {
+	public Integer getX() {
 		return x;
 	}
 
-
-
-	public void setX(Double x) {
-		this.x = x;
-	}
-
-
-
-	public Double getY() {
+	public Integer getY() {
 		return y;
 	}
-
-
-
-	public void setY(Double y) {
-		this.y = y;
-	}
-
-
 
 	@Override
 	public boolean equals(Object obj) {
@@ -53,18 +27,21 @@ public class Point {
 		return super.equals(obj);
 	}
 
-
+	@Override
+	public int hashCode() {
+		return (int) (x * x + y);
+	}
 
 	public static Double distance(Point p1, Point p2) {
-		return Math.sqrt(
-	            (p1.getX() - p2.getX()) *  (p1.getX() - p2.getX()) + 
-	            (p1.getY() - p2.getY()) *  (p1.getY() - p2.getY())
-	        );
+		double x = p1.getX() - p2.getX();
+		double y = p1.getY() - p2.getY();
+		Double distance = Math.sqrt(x * x + y * y);
+		return distance;
 	}
-	
+
 	@Override
 	public String toString() {
-		return String.format("(%f,%f)", x, y);
+		return String.format("(%d,%d)", x, y);
 	}
 
 }
